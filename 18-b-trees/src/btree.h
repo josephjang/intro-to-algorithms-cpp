@@ -44,7 +44,7 @@ class BTree {
   void InsertNonFull(Node *node, int key);
   void SplitChild(Node *node, int index);
   void DeleteInternal(Node *node, int key);
-  void MergeChildren(Node *node, int index);
+  Node *MergeChildren(Node *node, int index);
   void PrintNode(Node *node);
 
   Node *root;

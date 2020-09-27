@@ -166,6 +166,7 @@ void BTree::DeleteInternal(Node *node, int key) {
     } else {
       std::cout << "determined a child: " << i << " (" << node->children[i]
                 << ")" << std::endl;
+      auto node_to_delete = node->children[i];
       if (node->children[i]->n < t) {
         // check siblings
         if (i < node->n && node->children[i + 1]->n >= t) {
@@ -205,27 +206,25 @@ void BTree::DeleteInternal(Node *node, int key) {
           // move the rightmost child from the sibling to the child
           child->children[0] = sibling->children[sibling->n];
           sibling->n -= 1;
-          Print();
         } else if (i < node->n && node->children[i + 1]->n < t) {
           std::cout << "will execute 3b with the right sibling: "
                     << node->children[i + 1] << std::endl;
-          MergeChildren(node, i);
+          node_to_delete = MergeChildren(node, i);
         } else if (i > 0 && node->children[i - 1]->n < t) {
           std::cout << "will execute 3b with the left sibling: "
                     << node->children[i - 1] << std::endl;
-          MergeChildren(node, i - 1);
-          i = i - 1;
+          node_to_delete = MergeChildren(node, i - 1);
         }
       }
 
-      std::cout << "delete the key from a child: " << node->children[i]
+      std::cout << "delete the key from a child: " << node_to_delete
                 << std::endl;
-      DeleteInternal(node->children[i], key);
+      DeleteInternal(node_to_delete, key);
     }
   }
 }
 
-void BTree::MergeChildren(Node *node, int index) {
+BTree::Node *BTree::MergeChildren(Node *node, int index) {
   // merge the child and the sibling using the parent key as a median
   auto child = node->children[index];
   auto sibling = node->children[index + 1];
@@ -245,11 +244,16 @@ void BTree::MergeChildren(Node *node, int index) {
   node->n -= 1;
   if (node->n == 0) {
     root = child;
+    delete[] node->keys;
+    delete[] node->children;
+    delete node;
   }
   // delete the sibling node
   delete[] sibling->keys;
   delete[] sibling->children;
   delete sibling;
+
+  return child;
 }
 
 void BTree::Print() { PrintNode(root); }
